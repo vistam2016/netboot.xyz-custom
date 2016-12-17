@@ -3,10 +3,37 @@
 ### netboot.xyz-custom menu
 ###
 
+goto ${menu} ||
+
 :start
-echo Hello world!
-sleep 10
-goto custom_exit
+menu Custom
+item --gap Boot ISO
+item vcr35r ${space} Victoria 3.52
+item --gap Options:
+item url_set ${space} Base URL [ ${iso_base_url} ]
+choose iso_version || goto custom_exit
+goto ${iso_version}
+
+:url_set
+echo Set the HTTP URL of an ISO without the trailing slash:
+echo e.g. http://www.mydomain.com/iso
+echo
+echo -n URL: ${} && read iso_base_url
+echo
+echo netboot.xyz will attempt to load the following files:
+echo ${iso_base_url}/name.iso
+echo
+prompt Press any key to return to Windows Menu...
+goto start
+
+:vcr35r
+isset ${iso_base_url} && goto boot_iso || echo URL not set... && goto url_set
+
+:boot_iso
+kernel https://boot.netboot.xyz/memdisk iso raw
+initrd ${iso_base_url}/${iso_version}.iso
+boot
 
 :custom_exit
+clear menu
 exit 0
